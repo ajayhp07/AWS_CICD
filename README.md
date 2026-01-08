@@ -1,39 +1,144 @@
-# 🚀 AWS CI/CD Pipeline with CodePipeline, CodeBuild & CodeDeploy
+# 🚀 AWS CI/CD Pipeline Project
 
-## 📌 Project Overview
+### Automated Docker Build & EC2 Deployment using CodePipeline, CodeBuild & CodeDeploy
 
-This project demonstrates a **complete end-to-end CI/CD pipeline on AWS**, where application code hosted on GitHub is automatically built and deployed to an **EC2 instance** using AWS DevOps services.
+---
 
-The deployment is performed using **AWS CodeDeploy**, with the **CodeDeploy Agent installed inside the EC2 instance**, enabling real application deployment.
+## 📌 Project Introduction
+
+This project demonstrates a **real-world end-to-end CI/CD pipeline on AWS**, where application code is automatically built, containerized, and deployed to an **EC2 instance**.
+
+The pipeline follows **industry-level DevOps practices** including automated builds, centralized orchestration, and real deployment using **AWS CodeDeploy Agent**.
+
+---
+
+## 🎯 Project Objective
+
+The objective of this project is to:
+
+* Automate application build and deployment
+* Understand AWS native CI/CD services
+* Deploy Dockerized applications on EC2
+* Implement a **production-style DevOps workflow**
 
 ---
 
 ## 🏗️ Architecture Overview
 
-**Flow:**
+### 🔹 High-Level Architecture
 
-GitHub
-→ AWS CodePipeline
-→ AWS CodeBuild
-→ AWS CodeDeploy
-→ EC2 Instance (CodeDeploy Agent Installed)
+The architecture is designed to automate the complete CI/CD lifecycle from code commit to deployment on EC2.
+
+```
+Developer
+   |
+   v
+GitHub Repository
+   |
+   v
+AWS CodePipeline
+   |
+   v
+AWS CodeBuild  ----->  Docker Hub
+   |
+   v
+AWS CodeDeploy
+   |
+   v
+Deployment Group
+   |
+   v
+Amazon EC2 (CodeDeploy Agent Installed)
+```
 
 ---
 
-## 🛠️ Services & Tools Used
+### 🔹 Architecture Explanation (Component-wise)
 
-* **GitHub** – Source code repository
-* **AWS CodePipeline** – CI/CD orchestration
-* **AWS CodeBuild** – Build automation
-* **AWS CodeDeploy** – Application deployment
-* **Amazon EC2** – Deployment target
-* **AWS CodeDeploy Agent** – Enables deployment on EC2
-* **Docker** – Application containerization
-* **IAM** – Roles & permissions
+#### 👨‍💻 Developer
+
+* Pushes application code to GitHub
+* Any code change triggers the CI/CD pipeline
 
 ---
 
-## 📂 Repository Structure
+#### 📦 GitHub Repository
+
+* Acts as the **source stage**
+* Stores application code and CI/CD configuration files
+* Integrated with AWS CodePipeline
+
+---
+
+#### 🔄 AWS CodePipeline
+
+* Orchestrates the complete CI/CD workflow
+* Connects GitHub, CodeBuild, and CodeDeploy
+* Ensures stages run in correct order
+
+---
+
+#### 🛠️ AWS CodeBuild
+
+* Executes **Continuous Integration (CI)**
+* Pulls code from GitHub
+* Installs dependencies
+* Builds the Docker image using Dockerfile
+* Pushes Docker image to **Docker Hub**
+
+---
+
+#### 🐳 Docker Hub
+
+* Stores the Docker images
+* Acts as a container image registry
+* EC2 pulls images from Docker Hub during deployment
+
+---
+
+#### 🚀 AWS CodeDeploy
+
+* Handles **Continuous Deployment (CD)**
+* Triggered by CodePipeline
+* Uses Deployment Group to identify target EC2 instance
+* Sends deployment instructions to EC2
+
+---
+
+#### 🎯 Deployment Group
+
+* Logical group inside CodeDeploy
+* Defines **where** the application will be deployed
+* Maps EC2 instance as deployment target
+
+---
+
+#### 🖥️ Amazon EC2
+
+* Final deployment target
+* **AWS CodeDeploy Agent installed and running**
+* Executes deployment lifecycle scripts
+* Stops old container and starts new container
+
+---
+
+## 🧰 Services & Tools Used
+
+| Service / Tool   | Purpose                       |
+| ---------------- | ----------------------------- |
+| GitHub           | Source code management        |
+| AWS CodePipeline | CI/CD orchestration           |
+| AWS CodeBuild    | Build & Docker image creation |
+| AWS CodeDeploy   | Application deployment        |
+| Amazon EC2       | Deployment target             |
+| CodeDeploy Agent | Executes deployment on EC2    |
+| Docker           | Application containerization  |
+| Docker Hub       | Image registry                |
+| IAM              | Roles & permissions           |
+
+---
+
+## 📂 Repository Structure Explained
 
 ```
 AWS_CICD
@@ -48,88 +153,94 @@ AWS_CICD
 
 ---
 
-## 🔁 CI/CD Pipeline Workflow
+## 🔍 File-by-File Explanation
 
-### 1️⃣ Source Stage – GitHub
+### 🐳 Dockerfile
 
-* Application code is stored in GitHub
-* Any new commit automatically triggers the pipeline
+Defines how the Docker image is built.
 
----
+### 📄 buildspec.yml
 
-### 2️⃣ Build Stage – AWS CodeBuild
+Used by AWS CodeBuild to:
 
-* Code checkout from GitHub
-* Application build process
-* Docker image creation using `Dockerfile`
-* Build steps defined in `buildspec.yml`
+* Build Docker image
+* Authenticate with Docker Hub
+* Push image to Docker Hub
 
----
+### 📄 appspec.yml
 
-### 3️⃣ EC2 Preparation
+Used by AWS CodeDeploy to manage deployment lifecycle hooks.
 
-* EC2 instance launched for deployment
-* **AWS CodeDeploy Agent installed manually inside EC2**
-* IAM Role attached to EC2 with required CodeDeploy permissions
+### ▶️ start_container.sh
 
----
+Pulls the Docker image from Docker Hub and starts the container.
 
-### 4️⃣ CodeDeploy Configuration
+### 🛑 stop_container.sh
 
-* Application created in AWS CodeDeploy
-* Deployment Group configured
-* EC2 instance added as deployment target
-* CodeDeploy integrated with CodePipeline
+Stops and removes the existing container before deployment.
 
 ---
 
-### 5️⃣ Deployment Stage
+## 🔁 CI/CD Pipeline Workflow (Detailed)
 
-* CodePipeline triggers CodeDeploy automatically
-* CodeDeploy Agent executes deployment on EC2
-* Deployment lifecycle managed using `appspec.yml`
+### 1️⃣ Source – GitHub
+
+* Code pushed to GitHub triggers pipeline
+
+### 2️⃣ Build – CodeBuild
+
+* Application build
+* Docker image creation
+* Image pushed to Docker Hub
+
+### 3️⃣ Orchestration – CodePipeline
+
+* Controls stage execution
+* Triggers deployment after successful build
+
+### 4️⃣ Deployment – CodeDeploy
+
+* Deployment Group starts deployment
+* EC2 selected as target
+
+### 5️⃣ EC2 Execution
+
+* CodeDeploy Agent executes scripts
+* Application deployed successfully
 
 ---
 
-## 📄 Important Configuration Files
+## 🔐 IAM Roles & Permissions
 
-### `buildspec.yml`
-
-Defines build commands executed by CodeBuild.
-
-### `appspec.yml`
-
-Controls deployment lifecycle and calls shell scripts during deployment.
-
-### Shell Scripts
-
-* `stop_container.sh` – Stops existing application/container
-* `start_container.sh` – Starts new application/container
-
----
-
-## 🔐 Security & Permissions
-
-* IAM roles used for service-to-service communication
-* No hardcoded credentials in code
+* IAM roles used for secure communication
+* No hardcoded credentials
+* Role-based access for AWS services
 
 ---
 
 ## 📈 Key Features
 
 * Fully automated CI/CD pipeline
+* Docker image built during CI stage
 * Real EC2 deployment using CodeDeploy Agent
-* GitHub-based pipeline trigger
-* Dockerized application deployment
+* Zero manual deployment
 
 ---
 
-## 🎯 Learning Outcomes
+## 🧠 Learning Outcomes
 
-* Hands-on experience with AWS CI/CD services
-* Understanding CodeDeploy Agent & lifecycle hooks
-* End-to-end DevOps automation
-* IAM role and permission handling
+* AWS CI/CD service integration
+* Docker-based application delivery
+* Deployment using CodeDeploy Agent
+* Real-world DevOps automation
+
+---
+
+## 🚀 Future Enhancements
+
+* Use Amazon ECR instead of Docker Hub
+* Add Load Balancer & Auto Scaling
+* Add monitoring using CloudWatch
 
 ---
 
@@ -137,6 +248,10 @@ Controls deployment lifecycle and calls shell scripts during deployment.
 
 **Ajay Patel**
 Aspiring DevOps Engineer
-🔗 LinkedIn: *(add your LinkedIn profile link)*
 
-⭐ If you found this project useful, don’t forget to star the repository!
+🔗 GitHub: [https://github.com/ajayhp07]
+🔗 LinkedIn: www.linkedin.com/in/ajay077
+
+
+
+
